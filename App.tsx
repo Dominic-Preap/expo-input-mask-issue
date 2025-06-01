@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { MaskedTextInput } from "react-native-advanced-input-mask";
 
 export default function App() {
-  const [value, setValue] = useState(10);
+  const [value, setValue] = useState({ extracted: "10", formatted: "$10" });
 
   return (
     <View style={styles.container}>
@@ -13,13 +13,18 @@ export default function App() {
         autocomplete={false}
         keyboardType="numeric"
         mask="$[09999]{.}[09]"
-        multiline
-        onChangeText={(_, extractedValue) => {
-          setValue(+extractedValue);
+        onChangeText={(formatted, extracted) => {
+          setValue({
+            formatted,
+            extracted,
+          });
         }}
         placeholder="$5"
-        value={`${value}`}
+        placeholderTextColor="blue" // Adjust your own placeholder color
+        value={value.formatted} // Use formatted value from onChangeText instead
+        multiline={Platform.OS === "android" ? true : undefined} // For cursor to be center on Android
         style={{
+          color: "black", // Need to define for Android
           borderWidth: 1,
           width: 120,
           borderColor: "black",
@@ -33,13 +38,19 @@ export default function App() {
         {[10, 20, 30, 40, 50].map((x) => (
           <Pressable
             key={x}
-            onPress={()=>setValue(x)}
+            onPress={() =>
+              setValue({
+                extracted: x.toString(),
+                formatted: `$${x}`,
+              })
+            }
             style={{
               borderRadius: 99,
               alignItems: "center",
               width: 40,
               padding: 8,
-              backgroundColor: x === value? "#73D4FF": '#DFF1FE',
+              backgroundColor:
+                x.toString() === value.extracted ? "#73D4FF" : "#DFF1FE",
             }}
           >
             <Text>{x}</Text>
@@ -47,7 +58,7 @@ export default function App() {
         ))}
       </View>
 
-      <Text>Value should update as above: {value}</Text>
+      <Text>Value should update as above: {value.extracted}</Text>
     </View>
   );
 }
